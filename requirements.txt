@@ -1,1 +1,7 @@
+﻿fastapi
+uvicorn
+numpy
+Pillow
+requests
+joblib
 tensorflow

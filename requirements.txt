@@ -4,4 +4,4 @@ numpy
 Pillow
 requests
 joblib
-tensorflow
+tensorflow==2.6.0

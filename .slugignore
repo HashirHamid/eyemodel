@@ -1,4 +1,3 @@
-.*
 *.log
 /config.ini
 !importantfile.txt

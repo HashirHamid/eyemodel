@@ -1,6 +1,0 @@
-*.log
-/config.ini
-!importantfile.txt
-!app.py
-!runtime.txt
-!Procfile

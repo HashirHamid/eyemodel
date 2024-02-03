@@ -4,7 +4,7 @@ from PIL import Image
 import requests
 import numpy as np
 from io import BytesIO
-
+import os
 app = Flask(__name__)
 
 # Function to load the model from a URL

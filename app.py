@@ -1,43 +1,31 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from flask import Flask, request, jsonify
 from tensorflow.keras.models import load_model
-from pydantic import BaseModel
-from joblib import load 
-import numpy as np
 from PIL import Image
 import requests
+import numpy as np
 from io import BytesIO
-import os
-import tempfile
 
-app = FastAPI()
+app = Flask(__name__)
 
 # Function to load the model from a URL
 def load_model_from_url(model_url):
     response = requests.get(model_url)
     if response.status_code == 200:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".h5") as temp_file:
-            temp_file.write(response.content)
-            temp_file_path = temp_file.name
+        with open("model.h5", "wb") as model_file:
+            model_file.write(response.content)
 
         try:
-            model = load_model(temp_file_path)  # Ensure you have the correct import
+            model = load_model("model.h5")  # Ensure you have the correct import
             print("Model loaded successfully.")
             return model
         finally:
-            temp_file.close()
-            os.remove(temp_file_path)
+            os.remove("model.h5")
     else:
-        raise HTTPException(status_code=500, detail=f"Failed to download the model. Status code: {response.status_code}")
+        return jsonify({"error": f"Failed to download the model. Status code: {response.status_code}"}), 500
 
 # Load the model at application startup
 model_url = 'https://epsoldevops.com/ML/model.h5'
 model = load_model_from_url(model_url)
-
-# Define the request model using Pydantic
-class PredictionRequest(BaseModel):
-    image_path: str
 
 # Define the image preprocessing function
 def preprocess_image(image_path):
@@ -53,14 +41,17 @@ def preprocess_image(image_path):
         img = np.expand_dims(img, axis=0)  # Add batch dimension
         return img
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error loading image: {str(e)}")
+        return jsonify({"error": f"Error loading image: {str(e)}"}), 400
 
 # Prediction route
-@app.post('/predict')
-def predict(request: PredictionRequest):
+@app.route('/predict', methods=['POST'])
+def predict():
     try:
+        # Get image path from request
+        image_path = request.json.get('image_path')
+
         # Preprocess the image
-        processed_image = preprocess_image(request.image_path)
+        processed_image = preprocess_image(image_path)
 
         # Make a prediction
         prediction = model.predict(processed_image)
@@ -69,12 +60,15 @@ def predict(request: PredictionRequest):
         label = "Glaucoma" if prediction > 0.5 else "Not Glaucoma"
 
         response = {'prediction': label}
-        return JSONResponse(content=jsonable_encoder(response), status_code=200)
+        return jsonify(response), 200
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return jsonify({"error": str(e)}), 500
 
 # Index route
-@app.get("/")
+@app.route("/")
 def index():
-    return {"details": "Hello!"}
+    return jsonify({"details": "Hello!"})
+
+if __name__ == '__main__':
+    app.run(debug=True)

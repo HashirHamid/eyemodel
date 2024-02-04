@@ -1,0 +1,6 @@
+runtime: python3.11 # Use the appropriate Python version
+
+entrypoint: gunicorn -b :$PORT app:app # Use Gunicorn as the WSGI server
+
+env_variables:
+  MODEL_URL: "https://epsoldevops.com/ML/model.h5" # Specify your model URL here

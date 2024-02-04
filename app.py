@@ -5,6 +5,7 @@ import requests
 import numpy as np
 from io import BytesIO
 import os
+import uvicorn
 app = Flask(__name__)
 
 # Function to load the model from a URL
@@ -70,5 +71,7 @@ def predict():
 def index():
     return jsonify({"details": "Hello!"})
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000, workers=4, loop="asyncio")

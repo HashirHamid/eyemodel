@@ -1,6 +1,7 @@
 runtime: python3.11 # Use the appropriate Python version
 
-entrypoint: gunicorn -w 4 -k uvicorn.workers.UnicornWorkers app:app # Use Gunicorn as the WSGI server
+entrypoint: gunicorn -w 4 -k uvicorn.workers.UvicornWorker app:app
+# Use Gunicorn as the WSGI server
 
 env_variables:
   MODEL_URL: "https://epsoldevops.com/ML/model.h5" # Specify your model URL here
